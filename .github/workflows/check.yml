@@ -1,0 +1,38 @@
+name: Checks
+on:
+  push:
+  pull_request:
+permissions:
+  contents: read
+jobs:
+  tests:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: pip install -r requirements.txt
+      - run: python -m playwright install --with-deps chromium
+      - run: python -m unittest discover -s tests -q
+  deployment:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Validate Compose
+        run: |
+          docker compose config --quiet
+          DOMAIN=poster.example.com docker compose -f compose.yaml -f compose.public.yaml config --quiet
+          bash -n deploy.sh
+      - name: Build and start clean container
+        run: docker compose up --build -d --wait --wait-timeout 180
+      - name: Check gateway health and access protection
+        run: |
+          curl --fail http://localhost:8787/api/health
+          test "$(curl -s -o /dev/null -w '%{http_code}' http://localhost:8787/api/state)" = 401
+      - name: Logs
+        if: failure()
+        run: docker compose logs --tail=100
+      - name: Stop
+        if: always()
+        run: docker compose down
