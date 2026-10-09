@@ -6,10 +6,12 @@ permissions:
   contents: read
 jobs:
   tests:
+    env:
+      PLAYWRIGHT_BROWSERS_PATH: ${{ github.workspace }}/.browsers
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
+      - uses: actions/checkout@v5
+      - uses: actions/setup-python@v6
         with:
           python-version: '3.12'
       - run: pip install -r requirements.txt
@@ -18,7 +20,7 @@ jobs:
   deployment:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
       - name: Validate Compose
         run: |
           docker compose config --quiet
@@ -26,6 +28,14 @@ jobs:
           bash -n deploy.sh
       - name: Build and start clean container
         run: docker compose up --build -d --wait --wait-timeout 180
+      - name: Verify one-command installer and repeat install
+        run: |
+          python - <<'PYTHON'
+          import secrets, subprocess
+          password = secrets.token_urlsafe(24)
+          subprocess.run(['./deploy.sh'], input='ci-admin\n'+password+'\n'+password+'\n', text=True, check=True)
+          subprocess.run(['./deploy.sh'], check=True)
+          PYTHON
       - name: Check gateway health and access protection
         run: |
           curl --fail http://localhost:8787/api/health
