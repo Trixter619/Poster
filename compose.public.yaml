@@ -1,0 +1,27 @@
+services:
+  app:
+    environment:
+      VK_POSTER_PUBLIC_HOST: ${DOMAIN:?Set DOMAIN in .env}
+      VK_POSTER_HTTPS: "1"
+      VK_POSTER_PROXY: "1"
+      VK_POSTER_TRUSTED_PROXY: "*"
+      VKID_CALLBACK_URL: https://${DOMAIN}/auth/vk/callback
+  caddy:
+    image: caddy:2-alpine
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "443:443"
+      - "443:443/udp"
+    environment:
+      DOMAIN: ${DOMAIN}
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy_data:/data
+      - caddy_config:/config
+    depends_on:
+      app:
+        condition: service_healthy
+volumes:
+  caddy_data:
+  caddy_config:

@@ -1,0 +1,49 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="csrf-token" content="{{ csrf }}">
+  <title>S.A.G · VK Poster</title>
+  <link rel="stylesheet" href="/static/style.css">
+  <script src="/static/app.js" defer></script>
+</head>
+<body>
+  <aside class="sidebar">
+    <a class="brand" href="/" aria-label="VK Poster — главная">VK <span>Poster</span><small>Публикации по расписанию</small></a>
+    <div class="workspace"><span class="avatar">S</span><div>{{ operator_name or "S.A.G" }}<small>Рабочее пространство</small></div></div>
+    {% if operator_name %}<a class="operator-account" href="/account">Мой аккаунт и пароль</a>{% if operator_admin %}<a class="operator-account primary" href="/admin">Заявки и операторы ↗</a>{% endif %}{% endif %}
+    <nav aria-label="Разделы">
+      <button class="nav active" data-tab="editor"><span>▧</span> Объявление</button>
+      <button class="nav" data-tab="groups"><span>◎</span> Группы и расписание <b id="navCount">0</b></button>
+      <button class="nav" data-tab="history"><span>◷</span> Журнал отправок</button>
+    </nav>
+    <div class="sidebar-bottom"><span class="dot"></span> Подключение через VK ID<small>Твои объявления. По расписанию.</small></div>
+  </aside>
+  <main>
+    <header><span>РАБОЧЕЕ ПРОСТРАНСТВО <span class="slash">/</span> <b id="breadcrumb">Объявление</b></span><button id="accountBadge" class="badge">○ VK не подключён</button></header>
+    <div id="notice" role="status" aria-live="polite" hidden></div>
+    <section id="editor" class="tab">
+      <div class="page-title"><div><div class="eyebrow">КОНТЕНТ</div><h1>Твоё следующее объявление<span>.</span></h1><p>Текст, фотографии и всё, что нужно рассказать команде.</p></div><button id="saveDraft" class="primary">Сохранить изменения ↗</button></div>
+      <div class="editor-grid">
+        <div>
+          <article class="card"><div class="card-head"><h2>Текст объявления</h2><span id="saveStatus">Сохранено</span></div><label class="sr-only" for="postText">Текст объявления</label><textarea id="postText" maxlength="15000" placeholder="Расскажи о команде, добавь контакты и ссылки…"></textarea><div class="card-foot"><span>Ссылки можно вставлять прямо в текст</span><span id="charCount">0 / 15 000</span></div></article>
+          <article class="card"><div class="card-head"><div><h2>Фотографии <span id="photoCount" class="counter">0 / 10</span></h2><p>Первое фото — обложка. Меняй порядок стрелками.</p></div><button id="addPhotos">＋ Добавить</button></div><input id="photoInput" type="file" accept="image/jpeg,image/png,image/webp" multiple hidden><input id="replaceInput" type="file" accept="image/jpeg,image/png,image/webp" hidden><div id="photos" class="photo-grid"></div><div class="card-foot"><label for="photoLayout">Фото в посте <select id="photoLayout"><option value="grid">Плитки</option><option value="carousel">Лента (карусель)</option></select></label><span>JPG, PNG, WebP · до 15 МБ · максимум 10 фото</span></div></article>
+          <div class="hint">↗ Изменения применятся к следующим отправкам после сохранения. Уже размещённые записи сохранят прежний текст и фото.</div>
+        </div>
+        <aside class="preview-column"><div class="preview-label">ПРЕДПРОСМОТР <span>≈ VK</span></div><article class="preview card"><div class="preview-author"><span class="avatar">S</span><div id="previewAuthor">Твой профиль VK<small>Новая запись в сообществе</small></div><span class="ellipsis">···</span></div><div id="previewText"></div><button id="expandPreview" class="text-button">Показать полностью</button><div id="previewPhotos"></div><div class="social">♡ <span>♧</span> ↗ <span class="view">◉</span></div></article><div class="preview-note"><span class="dot"></span> От личного профиля<p>Группа может отправить запись на модерацию. Итоговый вид определяется VK.</p></div></aside>
+      </div>
+    </section>
+    <section id="groups" class="tab" hidden>
+      <div class="page-title"><div><div class="eyebrow">ПЛАНИРОВАНИЕ</div><h1>Нужные группы. Своё время<span>.</span></h1><p>Один сохранённый текст и набор фото — отдельное расписание для каждой группы.</p></div><button id="pauseAll">Запустить автоматику</button></div>
+      <article class="card settings-card"><h2>Автоматика: <span id="automationStatus" class="badge" role="status">Остановлена</span></h2><p id="automationDetail"></p><h2>Официальное подключение VK ID</h2><p>Войди в VK в своём браузере. Ключи подключения сохраняются на сервере отдельно для каждого оператора. Отправка и проверка публикаций выполняются через официальный API. Подключение продлевается автоматически.</p><button id="connectVKID" class="primary">Подключить VK ID</button><p id="vkStatus" role="status"></p></article><article class="card add-group"><label for="groupUrl">Добавить сообщество</label><div class="inline"><input id="groupUrl" placeholder="https://vk.com/название_группы"><button id="addGroup" class="primary">＋ Добавить группу</button></div><p>Можно добавить несколько групп по очереди. Доступно автоматическое предложение новости. Проверка доступа запускается при добавлении группы и перед включением расписания.</p></article>
+      <div class="schedule-summary"><span id="scheduleSummary"></span><span id="timezoneLabel"></span></div><div id="groupList"></div>
+      <div class="hint">Общая остановка приостанавливает отправки и проверку публикаций, сохраняя настройки групп. Начатая операция завершается. Для работы по расписанию приложение должно оставаться запущенным.</div>
+    </section>
+    <section id="history" class="tab" hidden>
+      <div class="page-title"><div><div class="eyebrow">АКТИВНОСТЬ</div><h1>Каждая отправка — на виду<span>.</span></h1><p>Последние 200 попыток и все ожидающие публикации. После предложения новости бот проверяет стену каждые 15 минут, пока запущен. Если запись не найдена, это ещё не означает отказ администратора.</p></div><button id="refreshHistory">↻ Обновить</button></div><div id="historyList" class="card"></div>
+    </section>
+
+  </main>
+  <dialog id="confirmDialog"><h2>Отправить объявление?</h2><p id="confirmText"></p><p>Будет отправлена сохранённая версия текста и фотографий.</p><div class="inline"><button id="cancelSend">Отмена</button><button id="confirmSend" class="primary">Отправить в VK</button></div></dialog>
+</body>
+</html>

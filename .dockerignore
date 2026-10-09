@@ -1,0 +1,9 @@
+*
+!*.py
+!requirements.txt
+!templates/
+!templates/**
+!static/
+!static/**
+!Dockerfile
+__pycache__/

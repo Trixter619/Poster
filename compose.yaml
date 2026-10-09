@@ -1,0 +1,15 @@
+services:
+  app:
+    build: .
+    restart: unless-stopped
+    ports:
+      - "127.0.0.1:${VK_POSTER_PORT:-8787}:8787"
+    environment:
+      VK_POSTER_DATA: /data
+      VK_POSTER_BIND: 0.0.0.0
+      VKID_APP_ID: ${VKID_APP_ID:-54800785}
+      VKID_CALLBACK_URL: ${VKID_CALLBACK_URL:-http://localhost:8787/auth/vk/callback}
+    volumes:
+      - poster_data:/data
+volumes:
+  poster_data:

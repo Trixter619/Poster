@@ -1,0 +1,25 @@
+data/
+.runtime/
+.launcher/
+.venv/
+.browsers/
+__pycache__/
+*.py[cod]
+.env
+.env.*
+!.env.example
+artifacts/
+*.sqlite3*
+*.db
+*.key
+*.pem
+*.tar.gz
+*.zip
+RESUME.md
+AGENTS.md
+sample.txt
+OFFICIAL_VK_SETUP.txt
+VK_SUPPORT_REQUEST.txt
+server/
+Подключиться к серверу.command
+Окно VK на сервере.command

@@ -1,0 +1,24 @@
+[Unit]
+Description=VK Poster local web interface and scheduler
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+# Change these paths and the Linux user before installation.
+User=vkposter
+WorkingDirectory=/opt/vk-poster
+ExecStart=/opt/vk-poster/.runtime/venv/bin/python /opt/vk-poster/app.py
+Environment=PLAYWRIGHT_BROWSERS_PATH=/opt/vk-poster/.runtime/browsers
+EnvironmentFile=-/opt/vk-poster/.env
+Restart=on-failure
+RestartSec=10
+UMask=0077
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=strict
+ProtectHome=true
+ReadWritePaths=/opt/vk-poster/data
+
+[Install]
+WantedBy=multi-user.target
